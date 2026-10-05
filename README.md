@@ -11,7 +11,7 @@ This script converts a standard CSV export from the Anobii website to a format y
 
 Python 3 installed
 
-The script contains a configuration section to manage different language translations. Italian is the default one; if you need to manage a different language, you must customize the following constants basing on your Anobii export content file:
+The script contains a configuration section to manage different language translations. English is the default one; if you need to manage a different language, you must customize the following constants basing on your Anobii export content file:
 
 |||
 |------|-------|

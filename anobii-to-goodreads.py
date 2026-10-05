@@ -3,17 +3,23 @@ anobii_file = "anobii_export.csv"
 goodreads_file = "import_to_goodreads.csv" 
 
 # Customize language translations
-FINISHED = "Finito nel "
-DROPPED  = "Abbandonato nel "
-READING  = "In lettura dal "
+FINISHED = "Finished on "
+DROPPED  = "Abandoned on "
+READING  = "Reading since "
 MONTHS   = ["gen", "feb", "mar", "apr", "mag", "giu", "lug", "ago", "set", "ott", "nov", "dic"]
 
 ####### do not change anything below this line
 
 from datetime import date
-import csv
+import csv, io, re
 
-reader = csv.reader(open(anobii_file, encoding="utf-8", newline=""))
+# Anobii exports text as UTF-16 code units but delimiters as single bytes: drop the NUL bytes
+data = open(anobii_file, "rb").read().replace(b"\x00", b"")
+try:
+	data = data.decode("utf-8")
+except UnicodeDecodeError:
+	data = data.decode("latin-1")
+reader = csv.reader(io.StringIO(data, newline=""))
 next(reader) # first line is column titles
 target = []
 target.append(["Title","Author","Additional Authors","ISBN","ISBN13","My Rating","Average Rating","Publisher","Binding","Year Published","Original Publication Year","Date Read","Date Added","Bookshelves","My Review","Spoiler","Private Notes","Recommended For","Recommended By"])
@@ -38,7 +44,7 @@ for l in reader:
 	# publisher
 	publisher = l[6]
 	# pubdate
-	pubdate = (l[7])[1:5]
+	pubdate = (l[7])[0:4]
 	# privnote
 	privnote = l[8]
 	# comment
@@ -70,6 +76,7 @@ for l in reader:
 	dtmpreaddate = tmpreaddate.replace(yreaddate,"").replace(mtmpreaddate,"")[-2:]
 	dreaddate = dtmpreaddate.replace(" ","0")
 	readdate = yreaddate + "-" + mreaddate + "-" + dreaddate
+	if re.search(r"\d{4}-\d{2}-\d{2}$", tmpreaddate): readdate = tmpreaddate[-10:]
 	if readdate == "1970-01-01": readdate = ""
 	if readdate == "--": readdate = ""
 	# dateadded
