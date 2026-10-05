@@ -22,7 +22,7 @@ except UnicodeDecodeError:
 reader = csv.reader(io.StringIO(data, newline=""))
 next(reader) # first line is column titles
 target = []
-target.append(["Title","Author","Additional Authors","ISBN","ISBN13","My Rating","Average Rating","Publisher","Binding","Year Published","Original Publication Year","Date Read","Date Added","Bookshelves","My Review","Spoiler","Private Notes","Recommended For","Recommended By"])
+target.append(["Title","Author","Additional Authors","ISBN","ISBN13","My Rating","Average Rating","Publisher","Binding","Year Published","Original Publication Year","Date Read","Date Added","Shelves","Bookshelves","My Review","Spoiler","Private Notes","Recommended For","Recommended By"])
 # loading all in memory is not efficient, there's certainly a better way
 for l in reader:
 	# isbn
@@ -76,7 +76,9 @@ for l in reader:
 	dtmpreaddate = tmpreaddate.replace(yreaddate,"").replace(mtmpreaddate,"")[-2:]
 	dreaddate = dtmpreaddate.replace(" ","0")
 	readdate = yreaddate + "-" + mreaddate + "-" + dreaddate
-	if re.search(r"\d{4}-\d{2}-\d{2}$", tmpreaddate): readdate = tmpreaddate[-10:]
+	# ISO dates, possibly partial (YYYY or YYYY-MM): missing month/day default to 01
+	isodate = re.search(r"(\d{4})(?:-(\d{2}))?(?:-(\d{2}))?$", tmpreaddate)
+	if isodate: readdate = isodate.group(1) + "-" + (isodate.group(2) or "01") + "-" + (isodate.group(3) or "01")
 	if readdate == "1970-01-01": readdate = ""
 	if readdate == "--": readdate = ""
 	# dateadded
@@ -87,7 +89,7 @@ for l in reader:
 	# rating
 	rating = l[12]
 	
-	tline = [title,author,"",isbn,"",rating,"",publisher,binding,pubdate,"",readdate,dateadded,bookshelves,comment,"",privnote,"",""]
+	tline = [title,author,"",isbn,"",rating,"",publisher,binding,pubdate,"",readdate,dateadded,bookshelves,bookshelves,comment,"",privnote,"",""]
 	target.append(tline)
 
 writer = csv.writer(open(goodreads_file, "w", encoding="utf-8", newline=""),dialect='excel',quoting=csv.QUOTE_NONNUMERIC)
